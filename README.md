@@ -62,3 +62,4 @@ src/
 - expo-haptics for haptic feedback
 - AsyncStorage for persistence
 
+
