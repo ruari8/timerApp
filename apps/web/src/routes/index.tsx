@@ -7,7 +7,6 @@ import {
   calculatePatternDuration,
 } from '@repo/shared';
 import { storage } from '@/lib/storage';
-import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/')({
   component: HomePage,

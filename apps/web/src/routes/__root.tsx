@@ -1,5 +1,4 @@
-import { createRootRoute, Outlet, Link } from '@tanstack/react-router';
-import { Settings } from 'lucide-react';
+import { createRootRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createRootRoute({
   component: RootLayout,

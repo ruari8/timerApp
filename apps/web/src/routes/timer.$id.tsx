@@ -4,7 +4,6 @@ import { ArrowLeft, Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
 import {
   TimerPattern,
   TimerState,
-  TimerSegment,
   AppSettings,
   DEFAULT_SETTINGS,
   formatTime,
