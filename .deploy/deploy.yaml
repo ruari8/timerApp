@@ -14,6 +14,6 @@ env:
 
 deploy:
   pre:
-    - "pnpm install --frozen-lockfile"
+    - "NODE_ENV=development pnpm install --frozen-lockfile"
     - "pnpm run build:web"
   post: []
