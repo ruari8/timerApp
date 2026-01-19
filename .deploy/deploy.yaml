@@ -1,0 +1,12 @@
+version: 1
+
+app:
+  name: timerapp
+  type: static
+  port: 3001
+
+deploy:
+  pre:
+    - "pnpm install --frozen-lockfile"
+    - "pnpm run build:web"
+  post: []
