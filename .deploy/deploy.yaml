@@ -5,6 +5,9 @@ app:
   type: static
   port: 3001
 
+runtime:
+  type: node
+
 env:
   set:
     NODE_ENV: production
