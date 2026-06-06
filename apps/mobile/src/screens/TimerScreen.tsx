@@ -94,9 +94,12 @@ export function TimerScreen({ navigation, route }: TimerScreenProps) {
         );
 
         if (nextPos.isComplete) {
-          playComplete();
+          playComplete(settings.hapticFeedback);
           setIsComplete(true);
-          if (intervalRef.current) clearInterval(intervalRef.current);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
           return {
             ...prev,
             isRunning: false,
@@ -122,7 +125,7 @@ export function TimerScreen({ navigation, route }: TimerScreenProps) {
       }
 
       if (prev.remainingSeconds === 4) {
-        playTick();
+        playTick(settings.hapticFeedback);
       }
       
       return {
@@ -140,8 +143,11 @@ export function TimerScreen({ navigation, route }: TimerScreenProps) {
     }
 
     if (state.isRunning) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      setState((prev) => ({ ...prev, isPaused: true }));
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setState((prev) => ({ ...prev, isRunning: false, isPaused: true }));
     } else {
       intervalRef.current = setInterval(tick, 1000);
       setState((prev) => ({ ...prev, isRunning: true, isPaused: false }));
@@ -149,7 +155,10 @@ export function TimerScreen({ navigation, route }: TimerScreenProps) {
   };
 
   const resetTimer = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setIsComplete(false);
     setState({
       isRunning: false,
@@ -165,7 +174,10 @@ export function TimerScreen({ navigation, route }: TimerScreenProps) {
 
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
   }, []);
 
@@ -193,7 +205,10 @@ export function TimerScreen({ navigation, route }: TimerScreenProps) {
       <TouchableOpacity
         style={styles.backBtn}
         onPress={() => {
-          if (intervalRef.current) clearInterval(intervalRef.current);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
           navigation.goBack();
         }}
       >

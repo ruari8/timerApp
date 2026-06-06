@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint src/"
+    "check": "tsc --noEmit",
+    "lint": "pnpm run check"
   },
   "dependencies": {
     "@repo/shared": "workspace:*",

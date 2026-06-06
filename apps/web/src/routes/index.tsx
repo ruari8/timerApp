@@ -47,11 +47,13 @@ function HomePage() {
             <h1 className="text-4xl font-extrabold text-neutral-50 tracking-tight">
               Timers
             </h1>
-            <p className="text-neutral-600 mt-1">Click to start, hover for options</p>
+            <p className="text-neutral-600 mt-1">Custom loops for training and game nights</p>
           </div>
           <Link
             to="/settings"
             className="p-3 rounded-xl bg-card border border-border hover:bg-background-tertiary transition-colors"
+            aria-label="Open settings"
+            title="Settings"
           >
             <Settings className="w-5 h-5 text-neutral-400" />
           </Link>
@@ -147,18 +149,30 @@ function PatternCard({
             <p className="text-sm text-neutral-500 truncate mt-1">{segmentNames}</p>
           </div>
 
-          {/* Actions - visible on hover */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1">
+            <Link
+              to="/timer/$id"
+              params={{ id: pattern.id }}
+              className="p-2 rounded-lg hover:bg-background-tertiary transition-colors"
+              aria-label={`Start ${pattern.name}`}
+              title="Start"
+            >
+              <Play className="w-4 h-4 text-amber-400" fill="currentColor" />
+            </Link>
             <Link
               to="/editor/$id"
               params={{ id: pattern.id }}
               className="p-2 rounded-lg hover:bg-background-tertiary transition-colors"
+              aria-label={`Edit ${pattern.name}`}
+              title="Edit"
             >
               <Edit className="w-4 h-4 text-neutral-400" />
             </Link>
             <button
               onClick={onDeleteClick}
               className="p-2 rounded-lg hover:bg-background-tertiary transition-colors"
+              aria-label={`Delete ${pattern.name}`}
+              title="Delete"
             >
               <Trash2 className="w-4 h-4 text-neutral-400" />
             </button>
@@ -173,17 +187,6 @@ function PatternCard({
             {pattern.blocks.length} block{pattern.blocks.length !== 1 ? 's' : ''}
           </span>
         </div>
-
-        {/* Play button overlay */}
-        <Link
-          to="/timer/$id"
-          params={{ id: pattern.id }}
-          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity"
-        >
-          <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
-            <Play className="w-8 h-8 text-neutral-900 ml-1" fill="currentColor" />
-          </div>
-        </Link>
       </div>
 
       {/* Delete confirmation */}

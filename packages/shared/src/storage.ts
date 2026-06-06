@@ -13,9 +13,15 @@ export class StorageService {
   }
 
   async loadPatterns(): Promise<TimerPattern[]> {
-    const data = await this.adapter.getItem(PATTERNS_KEY);
-    if (!data) return getDefaultPatterns();
-    return JSON.parse(data);
+    try {
+      const data = await this.adapter.getItem(PATTERNS_KEY);
+      if (!data) return getDefaultPatterns();
+
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : getDefaultPatterns();
+    } catch {
+      return getDefaultPatterns();
+    }
   }
 
   async savePattern(pattern: TimerPattern): Promise<void> {

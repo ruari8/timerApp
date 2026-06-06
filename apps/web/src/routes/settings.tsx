@@ -5,7 +5,7 @@ import { storage } from '@/lib/storage';
 import { playSound } from '@/lib/audio';
 import { cn } from '@/lib/utils';
 
-export const Route = createFileRoute('/settings' as any)({
+export const Route = createFileRoute('/settings')({
   component: SettingsPage,
 });
 
@@ -123,6 +123,7 @@ function SettingsPage() {
                   ? 'bg-amber-500 border-amber-400 justify-end'
                   : 'bg-background-tertiary border-border justify-start'
               )}
+              aria-label={settings.hapticFeedback ? 'Turn haptic feedback off' : 'Turn haptic feedback on'}
             >
               <span className="w-6 h-6 bg-neutral-50 rounded-full" />
             </button>

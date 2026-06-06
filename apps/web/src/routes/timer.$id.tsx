@@ -27,6 +27,13 @@ function TimerPage() {
   const [isComplete, setIsComplete] = useState(false);
   const intervalRef = useRef<number | null>(null);
 
+  const stopTimerInterval = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
   // Load pattern and settings
   useEffect(() => {
     const load = async () => {
@@ -62,9 +69,9 @@ function TimerPage() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      stopTimerInterval();
     };
-  }, []);
+  }, [stopTimerInterval]);
 
   const currentSegment = pattern && state
     ? getCurrentSegment(pattern, state.currentBlockIndex, state.currentSegmentIndex)
@@ -93,7 +100,7 @@ function TimerPage() {
         if (nextPos.isComplete) {
           playComplete(settings.hapticFeedback);
           setIsComplete(true);
-          if (intervalRef.current) clearInterval(intervalRef.current);
+          stopTimerInterval();
           return {
             ...prev,
             isRunning: false,
@@ -129,7 +136,7 @@ function TimerPage() {
         totalElapsedSeconds: prev.totalElapsedSeconds + 1,
       };
     });
-  }, [pattern, settings.defaultEndSound]);
+  }, [pattern, settings.defaultEndSound, settings.hapticFeedback, stopTimerInterval]);
 
   const toggleTimer = () => {
     if (!state || !pattern) return;
@@ -140,9 +147,10 @@ function TimerPage() {
     }
 
     if (state.isRunning) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      stopTimerInterval();
       setState((prev) => (prev ? { ...prev, isPaused: true, isRunning: false } : prev));
     } else {
+      stopTimerInterval();
       intervalRef.current = window.setInterval(tick, 1000);
       setState((prev) => (prev ? { ...prev, isRunning: true, isPaused: false } : prev));
     }
@@ -150,7 +158,7 @@ function TimerPage() {
 
   const resetTimer = () => {
     if (!pattern) return;
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    stopTimerInterval();
     setIsComplete(false);
     setState({
       isRunning: false,
@@ -220,6 +228,7 @@ function TimerPage() {
       <Link
         to="/"
         className="absolute top-8 left-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors z-10"
+        aria-label="Back to timers"
       >
         <ArrowLeft className="w-5 h-5" />
         <span>Back</span>
@@ -236,7 +245,7 @@ function TimerPage() {
           {isComplete ? 'Complete!' : currentSegment?.name || 'Timer'}
         </p>
 
-        <p className="text-8xl font-extralight text-white tracking-tight tabular-nums">
+        <p className="text-7xl sm:text-8xl font-extralight text-white tracking-tight tabular-nums">
           {formatTime(state.remainingSeconds)}
         </p>
 
@@ -286,6 +295,8 @@ function TimerPage() {
         <button
           onClick={resetTimer}
           className="p-4 text-white/60 hover:text-white transition-colors"
+          aria-label="Reset timer"
+          title="Reset"
         >
           <RotateCcw className="w-6 h-6" />
         </button>
@@ -296,6 +307,8 @@ function TimerPage() {
             'w-20 h-20 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-colors',
             isComplete && 'bg-white/70'
           )}
+          aria-label={isComplete ? 'Reset timer' : state.isRunning ? 'Pause timer' : 'Start timer'}
+          title={isComplete ? 'Reset' : state.isRunning ? 'Pause' : 'Start'}
         >
           {isComplete ? (
             <RotateCcw className="w-8 h-8 text-neutral-900" />
@@ -313,6 +326,8 @@ function TimerPage() {
             'p-4 text-white/60 hover:text-white transition-colors',
             isComplete && 'opacity-30 cursor-not-allowed'
           )}
+          aria-label={`Skip to ${settings.skipAheadSeconds} seconds remaining`}
+          title="Skip ahead"
         >
           <SkipForward className="w-6 h-6" />
         </button>

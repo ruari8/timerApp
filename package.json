@@ -7,7 +7,10 @@
     "dev:mobile": "turbo dev --filter=@repo/mobile",
     "build": "turbo build",
     "build:web": "turbo build --filter=@repo/web",
+    "check": "turbo check",
+    "typecheck": "turbo check",
     "lint": "turbo lint",
+    "preview:web": "pnpm --filter @repo/web preview",
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {

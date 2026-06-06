@@ -15,7 +15,7 @@ import {
 import { storage } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 
-export const Route = createFileRoute('/editor/$id' as any)({
+export const Route = createFileRoute('/editor/$id')({
   component: EditorPage,
 });
 
@@ -319,7 +319,7 @@ function SegmentCard({ segment, index, onUpdate, onDelete }: SegmentCardProps) {
             onChange={(event) =>
               onUpdate({
                 ...segment,
-                durationSeconds: Number(event.target.value || 0),
+                durationSeconds: Math.max(1, Number(event.target.value || 1)),
               })
             }
           />
@@ -352,6 +352,7 @@ function SegmentCard({ segment, index, onUpdate, onDelete }: SegmentCardProps) {
               key={color}
               type="button"
               onClick={() => onUpdate({ ...segment, color })}
+              aria-label={`Use segment color ${color}`}
               className={cn(
                 'w-7 h-7 rounded-full border-2 transition-transform',
                 segment.color === color ? 'border-neutral-100 scale-105' : 'border-transparent'

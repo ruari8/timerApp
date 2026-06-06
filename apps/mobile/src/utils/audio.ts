@@ -1,6 +1,6 @@
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
-import { SoundKey } from '../types';
+import { SoundKey } from '@repo/shared';
 
 // Sound cache to avoid reloading
 const soundCache: Map<string, Audio.Sound> = new Map();
@@ -98,7 +98,9 @@ export async function playBell(): Promise<void> {
 }
 
 // Play a tick sound for countdown
-export async function playTick(): Promise<void> {
+export async function playTick(useHaptic: boolean = true): Promise<void> {
+  if (!useHaptic) return;
+
   try {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   } catch (error) {
@@ -107,7 +109,9 @@ export async function playTick(): Promise<void> {
 }
 
 // Play completion sound
-export async function playComplete(): Promise<void> {
+export async function playComplete(useHaptic: boolean = true): Promise<void> {
+  if (!useHaptic) return;
+
   try {
     // Double haptic for completion
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

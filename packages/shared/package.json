@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "lint": "eslint src/"
+    "check": "tsc --noEmit",
+    "lint": "pnpm run check"
   },
   "devDependencies": {
     "typescript": "~5.9.2"
