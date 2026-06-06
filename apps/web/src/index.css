@@ -8,8 +8,19 @@
   }
 
   body {
-    @apply bg-background text-neutral-50 antialiased;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    @apply bg-background text-cream antialiased;
+    font-family: "Avenir Next", Bahnschrift, "Segoe UI", sans-serif;
+    letter-spacing: 0;
+    background-image:
+      linear-gradient(rgba(247, 240, 224, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(247, 240, 224, 0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
   }
 
   /* Custom scrollbar */
@@ -35,5 +46,9 @@
   .timer-font {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
+  }
+
+  .panel-shadow {
+    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(247, 240, 224, 0.08);
   }
 }

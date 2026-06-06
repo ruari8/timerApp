@@ -184,7 +184,7 @@ function TimerPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-neutral-500">Loading...</p>
+        <p className="text-cream/45">Loading...</p>
       </div>
     );
   }
@@ -192,8 +192,8 @@ function TimerPage() {
   if (!pattern || !state) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <p className="text-neutral-400 text-xl">Timer not found</p>
-        <Link to="/" className="text-amber-500 hover:text-amber-400">
+        <p className="text-xl font-black text-cream">Timer not found</p>
+        <Link to="/" className="text-signal hover:text-cream">
           Go back home
         </Link>
       </div>
@@ -218,104 +218,95 @@ function TimerPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center relative transition-colors duration-500"
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden transition-colors duration-500"
       style={{ backgroundColor: segmentColor }}
     >
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-background/55" />
+      <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(247,240,224,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(247,240,224,0.22)_1px,transparent_1px)] [background-size:34px_34px]" />
 
-      {/* Back button */}
       <Link
         to="/"
-        className="absolute top-8 left-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors z-10"
+        className="absolute left-5 top-6 z-10 flex items-center gap-2 rounded-lg border border-white/20 bg-black/25 px-3 py-2 text-sm font-bold text-white/80 backdrop-blur transition-colors hover:border-white/50 hover:text-white"
         aria-label="Back to timers"
       >
-        <ArrowLeft className="w-5 h-5" />
+        <ArrowLeft className="h-5 w-5" />
         <span>Back</span>
       </Link>
 
-      {/* Pattern name */}
-      <p className="absolute top-8 left-1/2 -translate-x-1/2 text-white/60 font-medium z-10">
+      <p className="absolute left-1/2 top-7 z-10 max-w-[42vw] -translate-x-1/2 truncate rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-center text-sm font-bold text-white/65 backdrop-blur">
         {pattern.name}
       </p>
 
-      {/* Timer display */}
-      <div className="flex flex-col items-center z-10">
-        <p className="text-2xl font-semibold text-white/90 uppercase tracking-widest mb-4">
+      <div className="z-10 flex flex-col items-center px-5 text-center">
+        <p className="mb-4 rounded-lg border border-white/15 bg-black/25 px-4 py-2 text-xl font-black uppercase text-white/90 backdrop-blur sm:text-2xl">
           {isComplete ? 'Complete!' : currentSegment?.name || 'Timer'}
         </p>
 
-        <p className="text-7xl sm:text-8xl font-extralight text-white tracking-tight tabular-nums">
+        <p className="timer-font font-mono text-[clamp(4.75rem,22vw,12rem)] font-black leading-none text-white tabular-nums drop-shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
           {formatTime(state.remainingSeconds)}
         </p>
 
-        {/* Progress bar */}
-        <div className="w-64 h-1 bg-white/20 rounded-full mt-8 overflow-hidden">
+        <div className="mt-8 h-2 w-[min(78vw,34rem)] overflow-hidden rounded-lg border border-white/20 bg-black/30">
           <div
-            className="h-full bg-white rounded-full transition-all duration-1000 ease-linear"
+            className="h-full rounded-lg bg-signal transition-all duration-1000 ease-linear"
             style={{ width: `${progress * 100}%` }}
           />
         </div>
       </div>
 
-      {/* Info row */}
-      <div className="flex items-center gap-8 mt-12 z-10">
-        <div className="text-center">
-          <p className="text-xs text-white/50 uppercase tracking-wider mb-1">Block</p>
-          <p className="text-white/90 font-semibold">{blockRepeatText}</p>
+      <div className="z-10 mt-10 grid w-[min(90vw,36rem)] grid-cols-3 gap-2">
+        <div className="rounded-lg border border-white/15 bg-black/25 p-3 text-center backdrop-blur">
+          <p className="mb-1 text-xs font-bold uppercase text-white/45">Block</p>
+          <p className="font-black text-white/90">{blockRepeatText}</p>
         </div>
-        <div className="w-px h-8 bg-white/20" />
-        <div className="text-center">
-          <p className="text-xs text-white/50 uppercase tracking-wider mb-1">Elapsed</p>
-          <p className="text-white/90 font-semibold">{formatTime(state.totalElapsedSeconds)}</p>
+        <div className="rounded-lg border border-white/15 bg-black/25 p-3 text-center backdrop-blur">
+          <p className="mb-1 text-xs font-bold uppercase text-white/45">Elapsed</p>
+          <p className="font-black text-white/90">{formatTime(state.totalElapsedSeconds)}</p>
         </div>
-        <div className="w-px h-8 bg-white/20" />
-        <div className="text-center">
-          <p className="text-xs text-white/50 uppercase tracking-wider mb-1">Pattern</p>
-          <p className="text-white/90 font-semibold">{patternRepeatText}</p>
+        <div className="rounded-lg border border-white/15 bg-black/25 p-3 text-center backdrop-blur">
+          <p className="mb-1 text-xs font-bold uppercase text-white/45">Pattern</p>
+          <p className="font-black text-white/90">{patternRepeatText}</p>
         </div>
       </div>
 
-      {/* Segment preview dots */}
-      <div className="flex gap-2 mt-8 z-10">
+      <div className="z-10 mt-6 flex gap-2">
         {currentBlock?.segments.map((seg, i) => (
           <div
             key={seg.id}
             className={cn(
-              'w-3 h-3 rounded-full transition-all duration-300',
-              i === state.currentSegmentIndex ? 'scale-125 opacity-100' : 'opacity-50'
+              'h-3 w-10 rounded-lg border border-white/20 transition-all duration-300',
+              i === state.currentSegmentIndex ? 'opacity-100' : 'opacity-40'
             )}
             style={{ backgroundColor: seg.color }}
           />
         ))}
       </div>
 
-      {/* Controls */}
-      <div className="absolute bottom-12 left-0 right-0 flex items-center justify-center gap-8 z-10">
+      <div className="absolute bottom-8 left-0 right-0 z-10 flex items-center justify-center gap-5">
         <button
           onClick={resetTimer}
-          className="p-4 text-white/60 hover:text-white transition-colors"
+          className="rounded-lg border border-white/15 bg-black/25 p-4 text-white/65 backdrop-blur transition-colors hover:border-white/45 hover:text-white"
           aria-label="Reset timer"
           title="Reset"
         >
-          <RotateCcw className="w-6 h-6" />
+          <RotateCcw className="h-6 w-6" />
         </button>
 
         <button
           onClick={toggleTimer}
           className={cn(
-            'w-20 h-20 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-colors',
-            isComplete && 'bg-white/70'
+            'flex h-24 w-24 items-center justify-center rounded-lg border border-signal bg-signal text-ink shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-colors hover:bg-cream',
+            isComplete && 'border-cream bg-cream'
           )}
           aria-label={isComplete ? 'Reset timer' : state.isRunning ? 'Pause timer' : 'Start timer'}
           title={isComplete ? 'Reset' : state.isRunning ? 'Pause' : 'Start'}
         >
           {isComplete ? (
-            <RotateCcw className="w-8 h-8 text-neutral-900" />
+            <RotateCcw className="h-9 w-9" />
           ) : state.isRunning && !state.isPaused ? (
-            <Pause className="w-8 h-8 text-neutral-900" fill="currentColor" />
+            <Pause className="h-9 w-9" fill="currentColor" />
           ) : (
-            <Play className="w-8 h-8 text-neutral-900 ml-1" fill="currentColor" />
+            <Play className="ml-1 h-9 w-9" fill="currentColor" />
           )}
         </button>
 
@@ -323,13 +314,13 @@ function TimerPage() {
           onClick={handleSkip}
           disabled={isComplete}
           className={cn(
-            'p-4 text-white/60 hover:text-white transition-colors',
+            'rounded-lg border border-white/15 bg-black/25 p-4 text-white/65 backdrop-blur transition-colors hover:border-white/45 hover:text-white',
             isComplete && 'opacity-30 cursor-not-allowed'
           )}
           aria-label={`Skip to ${settings.skipAheadSeconds} seconds remaining`}
           title="Skip ahead"
         >
-          <SkipForward className="w-6 h-6" />
+          <SkipForward className="h-6 w-6" />
         </button>
       </div>
     </div>

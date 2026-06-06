@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { AppSettings, DEFAULT_SETTINGS, SOUND_OPTIONS, SoundKey } from '@repo/shared';
 import { storage } from '@/lib/storage';
 import { playSound } from '@/lib/audio';
@@ -31,33 +32,34 @@ function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-neutral-500">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-cream/45">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="pt-12 px-6 pb-6">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-background text-cream">
+      <header className="border-b border-border bg-background/90 px-5 py-5 backdrop-blur">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
           <Link
             to="/"
-            className="text-sm font-semibold text-neutral-400 hover:text-neutral-200 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-bold text-cream/65 transition-colors hover:border-aqua hover:text-aqua"
           >
+            <ArrowLeft className="h-4 w-4" />
             Back
           </Link>
-          <span className="text-sm text-neutral-500">Settings</span>
+          <span className="text-sm font-bold uppercase text-cream/45">Settings</span>
           <div className="w-12" />
         </div>
       </header>
 
-      <main className="px-6 pb-24">
-        <div className="max-w-3xl mx-auto space-y-8">
-          <section className="bg-card border border-border rounded-2xl p-6 space-y-3">
+      <main className="px-5 py-8 pb-24">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <section className="space-y-3 rounded-lg border border-border bg-card p-6 panel-shadow">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-100">Skip ahead</h2>
-              <p className="text-sm text-neutral-500">
+              <h2 className="text-xl font-black text-cream">Skip ahead</h2>
+              <p className="text-sm text-cream/50">
                 When you tap skip, the timer jumps to this many seconds remaining.
               </p>
             </div>
@@ -67,10 +69,10 @@ function SettingsPage() {
                   key={seconds}
                   onClick={() => updateSettings({ skipAheadSeconds: seconds })}
                   className={cn(
-                    'px-4 py-2 rounded-xl border text-sm font-semibold transition-colors',
+                    'rounded-lg border px-4 py-2 text-sm font-black transition-colors',
                     settings.skipAheadSeconds === seconds
-                      ? 'bg-amber-500 text-background border-amber-400'
-                      : 'bg-background-tertiary text-neutral-400 border-border hover:border-border-light'
+                      ? 'border-signal bg-signal text-ink'
+                      : 'border-border bg-background-tertiary text-cream/55 hover:border-aqua hover:text-aqua'
                   )}
                 >
                   {seconds}s
@@ -79,10 +81,10 @@ function SettingsPage() {
             </div>
           </section>
 
-          <section className="bg-card border border-border rounded-2xl p-6 space-y-3">
+          <section className="space-y-3 rounded-lg border border-border bg-card p-6 panel-shadow">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-100">Default alert sound</h2>
-              <p className="text-sm text-neutral-500">
+              <h2 className="text-xl font-black text-cream">Default alert sound</h2>
+              <p className="text-sm text-cream/50">
                 Sound for new segments. Tap to preview.
               </p>
             </div>
@@ -95,10 +97,10 @@ function SettingsPage() {
                     updateSettings({ defaultEndSound: key });
                   }}
                   className={cn(
-                    'px-4 py-2 rounded-xl border text-sm font-semibold transition-colors',
+                    'rounded-lg border px-4 py-2 text-sm font-black transition-colors',
                     settings.defaultEndSound === key
-                      ? 'bg-amber-500 text-background border-amber-400'
-                      : 'bg-background-tertiary text-neutral-400 border-border hover:border-border-light'
+                      ? 'border-signal bg-signal text-ink'
+                      : 'border-border bg-background-tertiary text-cream/55 hover:border-aqua hover:text-aqua'
                   )}
                 >
                   {SOUND_OPTIONS[key].label}
@@ -107,10 +109,10 @@ function SettingsPage() {
             </div>
           </section>
 
-          <section className="bg-card border border-border rounded-2xl p-6 flex items-center justify-between">
+          <section className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-6 panel-shadow">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-100">Haptic feedback</h2>
-              <p className="text-sm text-neutral-500">
+              <h2 className="text-xl font-black text-cream">Haptic feedback</h2>
+              <p className="text-sm text-cream/50">
                 Vibration on timer transitions and ticks.
               </p>
             </div>
@@ -118,20 +120,20 @@ function SettingsPage() {
               type="button"
               onClick={() => updateSettings({ hapticFeedback: !settings.hapticFeedback })}
               className={cn(
-                'w-14 h-8 rounded-full border transition-colors flex items-center',
+                'flex h-8 w-14 items-center rounded-full border transition-colors',
                 settings.hapticFeedback
-                  ? 'bg-amber-500 border-amber-400 justify-end'
-                  : 'bg-background-tertiary border-border justify-start'
+                  ? 'justify-end border-signal bg-signal'
+                  : 'justify-start border-border bg-background-tertiary'
               )}
               aria-label={settings.hapticFeedback ? 'Turn haptic feedback off' : 'Turn haptic feedback on'}
             >
-              <span className="w-6 h-6 bg-neutral-50 rounded-full" />
+              <span className="h-6 w-6 rounded-full bg-cream" />
             </button>
           </section>
 
-          <section className="bg-card border border-border rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-neutral-100">About</h2>
-            <p className="text-sm text-neutral-500 mt-2">
+          <section className="rounded-lg border border-border bg-card p-6 panel-shadow">
+            <h2 className="text-xl font-black text-cream">About</h2>
+            <p className="mt-2 text-sm text-cream/50">
               Programmable interval timers for workouts, productivity, and game nights.
             </p>
           </section>

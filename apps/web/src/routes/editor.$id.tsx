@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Plus, Save, Trash2 } from 'lucide-react';
 import {
   TimerPattern,
   TimerBlock,
@@ -92,51 +93,53 @@ function EditorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-neutral-500">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-cream/45">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="pt-12 px-6 pb-6">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-background text-cream">
+      <header className="border-b border-border bg-background/90 px-5 py-5 backdrop-blur">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
           <Link
             to="/"
-            className="text-sm font-semibold text-neutral-400 hover:text-neutral-200 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-bold text-cream/65 transition-colors hover:border-aqua hover:text-aqua"
           >
+            <ArrowLeft className="h-4 w-4" />
             Back
           </Link>
-          <span className="text-sm text-neutral-500">
+          <span className="text-sm font-bold uppercase text-cream/45">
             {isNew ? 'New Timer' : 'Edit Timer'}
           </span>
           <button
             onClick={handleSave}
-            className="text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-signal bg-signal px-3 py-2 text-sm font-black text-ink transition-colors hover:bg-cream"
           >
+            <Save className="h-4 w-4" />
             Save
           </button>
         </div>
       </header>
 
-      <main className="px-6 pb-24">
-        <div className="max-w-3xl mx-auto space-y-8">
-          <section className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <main className="px-5 py-8 pb-24">
+        <div className="mx-auto max-w-4xl space-y-8">
+          <section className="space-y-4 rounded-lg border border-border bg-card p-6 panel-shadow">
             <div className="space-y-2">
-              <label className="text-sm text-neutral-500">Timer name</label>
+              <label className="text-sm font-bold text-cream/50">Timer name</label>
               <input
-                className="w-full bg-background-tertiary border border-border rounded-xl px-4 py-3 text-lg text-neutral-50 focus:outline-none focus:border-amber-400"
+                className="w-full rounded-lg border border-border bg-background-tertiary px-4 py-3 text-lg font-black text-cream focus:border-aqua focus:outline-none"
                 value={pattern.name}
                 onChange={(event) => updatePattern({ name: event.target.value })}
                 placeholder="Timer name"
               />
-              {error ? <p className="text-sm text-red-400">{error}</p> : null}
+              {error ? <p className="text-sm font-bold text-ember">{error}</p> : null}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wide text-neutral-500">
+                <p className="text-xs font-bold uppercase text-cream/45">
                   Loop entire pattern
                 </p>
                 <div className="flex gap-2 flex-wrap">
@@ -146,10 +149,10 @@ function EditorPage() {
                       type="button"
                       onClick={() => updatePattern({ repeatEntirePattern: value })}
                       className={cn(
-                        'px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors',
+                        'rounded-lg border px-3 py-1.5 text-sm font-black transition-colors',
                         pattern.repeatEntirePattern === value
-                          ? 'bg-amber-500 text-background border-amber-400'
-                          : 'bg-background-tertiary text-neutral-400 border-border hover:border-border-light'
+                          ? 'border-signal bg-signal text-ink'
+                          : 'border-border bg-background-tertiary text-cream/55 hover:border-aqua hover:text-aqua'
                       )}
                     >
                       {value === -1 ? '∞' : value}
@@ -158,9 +161,9 @@ function EditorPage() {
                 </div>
               </div>
 
-              <div className="text-sm text-neutral-500">
+              <div className="text-sm font-bold text-cream/45">
                 Total duration:{' '}
-                <span className="text-neutral-200 font-semibold">
+                <span className="font-black text-signal">
                   {isInfinite ? '∞' : formatDuration(totalDuration)}
                 </span>
               </div>
@@ -170,16 +173,17 @@ function EditorPage() {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-neutral-100">Blocks</h2>
-                <p className="text-sm text-neutral-500">
+                <h2 className="text-2xl font-black text-cream">Blocks</h2>
+                <p className="text-sm text-cream/50">
                   Each block contains segments that play in sequence.
                 </p>
               </div>
               <button
                 onClick={addBlock}
-                className="px-4 py-2 rounded-xl bg-background-tertiary border border-border text-neutral-200 hover:border-border-light"
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-black text-cream transition-colors hover:border-aqua hover:text-aqua"
               >
-                + Add Block
+                <Plus className="h-4 w-4" />
+                Add Block
               </button>
             </div>
 
@@ -232,15 +236,15 @@ function BlockCard({ block, index, onUpdate, onDelete }: BlockCardProps) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+    <div className="space-y-4 rounded-lg border border-border bg-card p-6 panel-shadow">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-neutral-100">Block {index + 1}</h3>
-          <p className="text-sm text-neutral-500">Repeat count</p>
+          <h3 className="text-xl font-black text-cream">Block {index + 1}</h3>
+          <p className="text-sm text-cream/45">Repeat count</p>
         </div>
         <div className="flex items-center gap-3">
           <select
-            className="bg-background-tertiary border border-border rounded-lg px-3 py-2 text-neutral-200"
+            className="rounded-lg border border-border bg-background-tertiary px-3 py-2 font-bold text-cream"
             value={block.repeatCount}
             onChange={(event) => updateBlock({ repeatCount: Number(event.target.value) })}
           >
@@ -252,9 +256,10 @@ function BlockCard({ block, index, onUpdate, onDelete }: BlockCardProps) {
           </select>
           <button
             onClick={onDelete}
-            className="text-sm text-neutral-400 hover:text-red-400"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-bold text-cream/55 transition-colors hover:border-ember hover:text-ember"
           >
-            Delete block
+            <Trash2 className="h-4 w-4" />
+            Delete
           </button>
         </div>
       </div>
@@ -273,9 +278,10 @@ function BlockCard({ block, index, onUpdate, onDelete }: BlockCardProps) {
 
       <button
         onClick={addSegment}
-        className="w-full py-2 rounded-xl border border-border text-neutral-300 hover:border-border-light"
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border py-3 font-black text-cream/70 transition-colors hover:border-aqua hover:text-aqua"
       >
-        + Add Segment
+        <Plus className="h-4 w-4" />
+        Add Segment
       </button>
     </div>
   );
@@ -290,31 +296,31 @@ type SegmentCardProps = {
 
 function SegmentCard({ segment, index, onUpdate, onDelete }: SegmentCardProps) {
   return (
-    <div className="bg-background-tertiary border border-border rounded-xl p-4 space-y-3">
+    <div className="space-y-3 rounded-lg border border-border bg-background-tertiary p-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-neutral-500">Segment {index + 1}</p>
+          <p className="text-xs font-bold uppercase text-cream/45">Segment {index + 1}</p>
           <input
-            className="mt-2 bg-transparent border-b border-border text-neutral-100 text-base focus:outline-none focus:border-amber-400"
+            className="mt-2 border-b border-border bg-transparent text-base font-black text-cream focus:border-aqua focus:outline-none"
             value={segment.name}
             onChange={(event) => onUpdate({ ...segment, name: event.target.value })}
           />
         </div>
         <button
           onClick={onDelete}
-          className="text-sm text-neutral-400 hover:text-red-400"
+          className="text-sm font-bold text-cream/50 transition-colors hover:text-ember"
         >
           Delete
         </button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="space-y-2 text-sm text-neutral-500">
+        <label className="space-y-2 text-sm font-bold text-cream/50">
           Duration (seconds)
           <input
             type="number"
             min={1}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-neutral-100"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-cream"
             value={segment.durationSeconds}
             onChange={(event) =>
               onUpdate({
@@ -323,15 +329,15 @@ function SegmentCard({ segment, index, onUpdate, onDelete }: SegmentCardProps) {
               })
             }
           />
-          <p className="text-xs text-neutral-600">
+          <p className="text-xs text-cream/35">
             {formatDuration(segment.durationSeconds)}
           </p>
         </label>
 
-        <label className="space-y-2 text-sm text-neutral-500">
+        <label className="space-y-2 text-sm font-bold text-cream/50">
           End sound
           <select
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-neutral-100"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-cream"
             value={segment.endSound ?? 'bell'}
             onChange={(event) => onUpdate({ ...segment, endSound: event.target.value as keyof typeof SOUND_OPTIONS })}
           >
@@ -345,7 +351,7 @@ function SegmentCard({ segment, index, onUpdate, onDelete }: SegmentCardProps) {
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm text-neutral-500">Color</p>
+        <p className="text-sm font-bold text-cream/50">Color</p>
         <div className="flex flex-wrap gap-2">
           {COLOR_OPTIONS.map((color) => (
             <button
@@ -355,7 +361,7 @@ function SegmentCard({ segment, index, onUpdate, onDelete }: SegmentCardProps) {
               aria-label={`Use segment color ${color}`}
               className={cn(
                 'w-7 h-7 rounded-full border-2 transition-transform',
-                segment.color === color ? 'border-neutral-100 scale-105' : 'border-transparent'
+                segment.color === color ? 'border-cream scale-105' : 'border-transparent'
               )}
               style={{ backgroundColor: color }}
             />
