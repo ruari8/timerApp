@@ -65,12 +65,14 @@ export interface AppSettings {
   skipAheadSeconds: number; // How many seconds to leave when skipping (default 5)
   defaultEndSound: SoundKey; // Default sound for new segments
   hapticFeedback: boolean; // Whether to use haptic feedback
+  countdownBeeps: boolean; // Beep on the last 3 seconds of each step
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   skipAheadSeconds: 5,
   defaultEndSound: 'bell',
   hapticFeedback: true,
+  countdownBeeps: true,
 };
 
 // Storage adapter interface for cross-platform persistence

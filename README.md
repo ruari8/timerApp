@@ -8,11 +8,15 @@ Live web app: [timerapp.ruari.dev](https://timerapp.ruari.dev/)
 
 ## What It Does
 
-- Create custom timer patterns made of blocks and segments
+- Quick countdown timer with a keypad and presets (e.g. 20 min in two taps)
+- Quick work/rest intervals for a number of rounds
+- Stopwatch with laps
+- Create custom timer patterns made of blocks and segments (called routines, sets and steps in the UI)
 - Repeat a block a fixed number of times or forever
 - Repeat the whole pattern a fixed number of times or forever
 - Set segment names, durations, colors, and end sounds
-- Run timers with pause, reset, skip-ahead, elapsed time, and repeat counters
+- Run timers with pause, restart, skip to next step, +1 min, elapsed time, and repeat counters
+- Timing follows the wall clock, so it stays correct when the tab is in the background or the phone locks; the screen is kept awake while running
 - Store timers and settings locally on web and mobile
 - Share core timer types, helpers, presets, and storage logic across apps
 

@@ -19,6 +19,18 @@ const SOUND_CONFIG: Record<string, { freq: number; duration: number; type: Oscil
   whistle: { freq: 1800, duration: 0.4, type: 'sine' },
 };
 
+// Call from a user gesture (e.g. pressing Start) so mobile browsers allow later playback
+export function unlockAudio(): void {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') {
+      void ctx.resume();
+    }
+  } catch {
+    // Audio unavailable; timers still work silently
+  }
+}
+
 function vibrate(pattern: number | number[]) {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     navigator.vibrate(pattern);

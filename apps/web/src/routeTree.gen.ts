@@ -9,14 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StopwatchRouteImport } from './routes/stopwatch'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RunRouteImport } from './routes/run'
+import { Route as RoutinesRouteImport } from './routes/routines'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TimerIdRouteImport } from './routes/timer.$id'
 import { Route as EditorIdRouteImport } from './routes/editor.$id'
 
+const StopwatchRoute = StopwatchRouteImport.update({
+  id: '/stopwatch',
+  path: '/stopwatch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunRoute = RunRouteImport.update({
+  id: '/run',
+  path: '/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoutinesRoute = RoutinesRouteImport.update({
+  id: '/routines',
+  path: '/routines',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,45 +55,100 @@ const EditorIdRoute = EditorIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/routines': typeof RoutinesRoute
+  '/run': typeof RunRoute
   '/settings': typeof SettingsRoute
+  '/stopwatch': typeof StopwatchRoute
   '/editor/$id': typeof EditorIdRoute
   '/timer/$id': typeof TimerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/routines': typeof RoutinesRoute
+  '/run': typeof RunRoute
   '/settings': typeof SettingsRoute
+  '/stopwatch': typeof StopwatchRoute
   '/editor/$id': typeof EditorIdRoute
   '/timer/$id': typeof TimerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/routines': typeof RoutinesRoute
+  '/run': typeof RunRoute
   '/settings': typeof SettingsRoute
+  '/stopwatch': typeof StopwatchRoute
   '/editor/$id': typeof EditorIdRoute
   '/timer/$id': typeof TimerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/editor/$id' | '/timer/$id'
+  fullPaths:
+    | '/'
+    | '/routines'
+    | '/run'
+    | '/settings'
+    | '/stopwatch'
+    | '/editor/$id'
+    | '/timer/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/editor/$id' | '/timer/$id'
-  id: '__root__' | '/' | '/settings' | '/editor/$id' | '/timer/$id'
+  to:
+    | '/'
+    | '/routines'
+    | '/run'
+    | '/settings'
+    | '/stopwatch'
+    | '/editor/$id'
+    | '/timer/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/routines'
+    | '/run'
+    | '/settings'
+    | '/stopwatch'
+    | '/editor/$id'
+    | '/timer/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RoutinesRoute: typeof RoutinesRoute
+  RunRoute: typeof RunRoute
   SettingsRoute: typeof SettingsRoute
+  StopwatchRoute: typeof StopwatchRoute
   EditorIdRoute: typeof EditorIdRoute
   TimerIdRoute: typeof TimerIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stopwatch': {
+      id: '/stopwatch'
+      path: '/stopwatch'
+      fullPath: '/stopwatch'
+      preLoaderRoute: typeof StopwatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/run': {
+      id: '/run'
+      path: '/run'
+      fullPath: '/run'
+      preLoaderRoute: typeof RunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/routines': {
+      id: '/routines'
+      path: '/routines'
+      fullPath: '/routines'
+      preLoaderRoute: typeof RoutinesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -104,7 +177,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RoutinesRoute: RoutinesRoute,
+  RunRoute: RunRoute,
   SettingsRoute: SettingsRoute,
+  StopwatchRoute: StopwatchRoute,
   EditorIdRoute: EditorIdRoute,
   TimerIdRoute: TimerIdRoute,
 }

@@ -1,373 +1,358 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Play, Plus, Trash2, X } from 'lucide-react';
 import {
   TimerPattern,
   TimerBlock,
   TimerSegment,
   SEGMENT_COLORS,
   SOUND_OPTIONS,
+  SoundKey,
   createDefaultPattern,
   createDefaultBlock,
   createDefaultSegment,
   calculatePatternDuration,
   formatDuration,
 } from '@repo/shared';
+import { DurationField, RepeatStepper } from '@/components/inputs';
 import { storage } from '@/lib/storage';
+import { playSound } from '@/lib/audio';
 import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/editor/$id')({
   component: EditorPage,
 });
 
-const PATTERN_REPEAT_OPTIONS = [1, 2, 3, 4, 5, -1];
-const BLOCK_REPEAT_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, -1];
-const SOUND_KEYS = Object.keys(SOUND_OPTIONS) as Array<keyof typeof SOUND_OPTIONS>;
+const SOUND_KEYS = Object.keys(SOUND_OPTIONS) as SoundKey[];
 const COLOR_OPTIONS = Object.values(SEGMENT_COLORS);
 
 function EditorPage() {
   const { id } = Route.useParams();
   const navigate = Route.useNavigate();
-  const [pattern, setPattern] = useState<TimerPattern>(() => createDefaultPattern());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const isNew = id === 'new';
+  const [pattern, setPattern] = useState<TimerPattern | null>(null);
+  const [exists, setExists] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const patterns = await storage.loadPatterns();
-        if (!isNew) {
-          const found = patterns.find((item) => item.id === id);
-          if (found) {
-            setPattern(found);
-          } else {
-            setPattern(createDefaultPattern());
-          }
-        } else {
-          setPattern(createDefaultPattern());
-        }
-      } catch (err) {
-        console.error('Failed to load pattern', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
+    storage.loadPatterns().then((patterns) => {
+      const found = isNew ? undefined : patterns.find((item) => item.id === id);
+      setExists(Boolean(found));
+      setPattern(found ?? { ...createDefaultPattern(), name: '' });
+    });
   }, [id, isNew]);
 
-  const totalDuration = useMemo(() => calculatePatternDuration(pattern), [pattern]);
-  const isInfinite = totalDuration === -1;
+  const totalDuration = useMemo(() => (pattern ? calculatePatternDuration(pattern) : 0), [pattern]);
 
-  const updatePattern = (updates: Partial<TimerPattern>) => {
-    setPattern((prev) => ({ ...prev, ...updates }));
-  };
+  if (!pattern) return <div className="min-h-[100dvh] bg-background" />;
 
-  const updateBlock = (index: number, block: TimerBlock) => {
-    const blocks = [...pattern.blocks];
-    blocks[index] = block;
-    updatePattern({ blocks });
-  };
+  const updatePattern = (updates: Partial<TimerPattern>) => setPattern({ ...pattern, ...updates });
 
-  const deleteBlock = (index: number) => {
-    if (pattern.blocks.length === 1) return;
-    updatePattern({ blocks: pattern.blocks.filter((_, i) => i !== index) });
-  };
+  const updateBlock = (index: number, block: TimerBlock) =>
+    updatePattern({ blocks: pattern.blocks.map((b, i) => (i === index ? block : b)) });
 
-  const addBlock = () => {
-    updatePattern({ blocks: [...pattern.blocks, createDefaultBlock()] });
+  const save = async () => {
+    const saved = { ...pattern, name: pattern.name.trim() || 'Untitled routine' };
+    await storage.savePattern(saved);
+    return saved;
   };
 
   const handleSave = async () => {
-    const trimmed = pattern.name.trim();
-    if (!trimmed) {
-      setError('Please give the timer a name.');
-      return;
-    }
-
-    setError(null);
-    await storage.savePattern({ ...pattern, name: trimmed });
-    navigate({ to: '/' });
+    await save();
+    navigate({ to: '/routines' });
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-cream/45">Loading...</p>
-      </div>
-    );
-  }
+  const handleSaveAndStart = async () => {
+    const saved = await save();
+    navigate({ to: '/timer/$id', params: { id: saved.id }, search: { autostart: true } });
+  };
+
+  const handleDelete = async () => {
+    await storage.deletePattern(pattern.id);
+    navigate({ to: '/routines' });
+  };
+
+  const steps = pattern.blocks.flatMap((block) => block.segments);
+  const multipleSets = pattern.blocks.length > 1;
 
   return (
-    <div className="min-h-screen bg-background text-cream">
-      <header className="border-b border-border bg-background/90 px-5 py-5 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
+    <div className="min-h-[100dvh] bg-background text-cream">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
+        <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
           <Link
-            to="/"
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-bold text-cream/65 transition-colors hover:border-aqua hover:text-aqua"
+            to="/routines"
+            className="grid h-10 w-10 place-items-center rounded-full bg-card text-cream/70 transition-colors hover:text-cream"
+            aria-label="Back to routines"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back
+            <ArrowLeft className="h-5 w-5" />
           </Link>
-          <span className="text-sm font-bold uppercase text-cream/45">
-            {isNew ? 'New Timer' : 'Edit Timer'}
-          </span>
+          <span className="text-sm font-bold text-cream/60">{exists ? 'Edit routine' : 'New routine'}</span>
           <button
             onClick={handleSave}
-            className="inline-flex items-center gap-2 rounded-lg border border-signal bg-signal px-3 py-2 text-sm font-black text-ink transition-colors hover:bg-cream"
+            className="h-10 rounded-full bg-card px-4 text-sm font-black text-cream transition-colors hover:bg-background-tertiary"
           >
-            <Save className="h-4 w-4" />
             Save
           </button>
         </div>
       </header>
 
-      <main className="px-5 py-8 pb-24">
-        <div className="mx-auto max-w-4xl space-y-8">
-          <section className="space-y-4 rounded-lg border border-border bg-card p-6 panel-shadow">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-cream/50">Timer name</label>
-              <input
-                className="w-full rounded-lg border border-border bg-background-tertiary px-4 py-3 text-lg font-black text-cream focus:border-aqua focus:outline-none"
-                value={pattern.name}
-                onChange={(event) => updatePattern({ name: event.target.value })}
-                placeholder="Timer name"
-              />
-              {error ? <p className="text-sm font-bold text-ember">{error}</p> : null}
-            </div>
+      <main className="px-4 pb-32 pt-5">
+        <div className="mx-auto max-w-xl space-y-5">
+          <input
+            className="w-full rounded-2xl bg-card px-4 py-4 text-2xl font-black text-cream placeholder:text-cream/30 focus:outline-none focus:ring-2 focus:ring-aqua"
+            value={pattern.name}
+            onChange={(event) => updatePattern({ name: event.target.value })}
+            placeholder="Routine name"
+            autoFocus={isNew}
+          />
 
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="space-y-1">
-                <p className="text-xs font-bold uppercase text-cream/45">
-                  Loop entire pattern
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  {PATTERN_REPEAT_OPTIONS.map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => updatePattern({ repeatEntirePattern: value })}
-                      className={cn(
-                        'rounded-lg border px-3 py-1.5 text-sm font-black transition-colors',
-                        pattern.repeatEntirePattern === value
-                          ? 'border-signal bg-signal text-ink'
-                          : 'border-border bg-background-tertiary text-cream/55 hover:border-aqua hover:text-aqua'
-                      )}
-                    >
-                      {value === -1 ? '∞' : value}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="text-sm font-bold text-cream/45">
-                Total duration:{' '}
-                <span className="font-black text-signal">
-                  {isInfinite ? '∞' : formatDuration(totalDuration)}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-black text-cream">Blocks</h2>
-                <p className="text-sm text-cream/50">
-                  Each block contains segments that play in sequence.
-                </p>
-              </div>
-              <button
-                onClick={addBlock}
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-black text-cream transition-colors hover:border-aqua hover:text-aqua"
-              >
-                <Plus className="h-4 w-4" />
-                Add Block
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {pattern.blocks.map((block, blockIndex) => (
-                <BlockCard
-                  key={block.id}
-                  block={block}
-                  index={blockIndex}
-                  onUpdate={(updated) => updateBlock(blockIndex, updated)}
-                  onDelete={() => deleteBlock(blockIndex)}
-                />
+          <div>
+            <div className="flex h-2 overflow-hidden rounded-full">
+              {steps.map((step) => (
+                <span key={step.id} style={{ backgroundColor: step.color, flexGrow: step.durationSeconds }} />
               ))}
             </div>
-          </section>
+            <p className="mt-2 text-sm font-bold text-cream/50">
+              {totalDuration === -1 ? 'Repeats until you stop it' : `Total ${formatDuration(totalDuration)}`}
+            </p>
+          </div>
+
+          {pattern.blocks.map((block, blockIndex) => (
+            <SetCard
+              key={block.id}
+              block={block}
+              title={multipleSets ? `Set ${blockIndex + 1}` : 'Steps'}
+              onUpdate={(updated) => updateBlock(blockIndex, updated)}
+              onDelete={
+                multipleSets
+                  ? () => {
+                      const blocks = pattern.blocks.filter((_, i) => i !== blockIndex);
+                      // The whole-routine repeat is only shown with several sets, so don't leave it hidden and set
+                      updatePattern({ blocks, repeatEntirePattern: blocks.length > 1 ? pattern.repeatEntirePattern : 1 });
+                    }
+                  : undefined
+              }
+            />
+          ))}
+
+          <button
+            onClick={() => updatePattern({ blocks: [...pattern.blocks, createDefaultBlock()] })}
+            className="w-full rounded-2xl border border-dashed border-border-light py-4 text-sm font-bold text-cream/60 transition-colors hover:border-aqua hover:text-aqua"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Add another set
+            </span>
+            <span className="mt-0.5 block text-xs font-normal text-cream/40">
+              e.g. a warm-up, a cooldown, or a long break after the main set
+            </span>
+          </button>
+
+          {multipleSets ? (
+            <div className="flex items-center justify-between gap-3 rounded-2xl bg-card px-4 py-3">
+              <div>
+                <p className="font-black">Repeat whole routine</p>
+                <p className="text-xs text-cream/40">Runs every set again from the top</p>
+              </div>
+              <RepeatStepper
+                label="routine repeats"
+                value={pattern.repeatEntirePattern}
+                onChange={(repeatEntirePattern) => updatePattern({ repeatEntirePattern })}
+              />
+            </div>
+          ) : null}
+
+          {exists ? (
+            <div className="pt-4">
+              {confirmDelete ? (
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-card p-4">
+                  <p className="font-bold">Delete this routine?</p>
+                  <div className="flex gap-2">
+                    <button onClick={() => setConfirmDelete(false)} className="rounded-full px-4 py-2 text-sm font-bold text-cream/60">
+                      Cancel
+                    </button>
+                    <button onClick={handleDelete} className="rounded-full bg-ember px-4 py-2 text-sm font-black text-ink">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="mx-auto flex items-center gap-2 text-sm font-bold text-cream/40 transition-colors hover:text-ember"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete routine
+                </button>
+              )}
+            </div>
+          ) : null}
         </div>
       </main>
+
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+        <button
+          onClick={handleSaveAndStart}
+          className="mx-auto flex w-full max-w-xl items-center justify-center gap-2 rounded-full bg-signal py-4 text-lg font-black text-ink transition-colors hover:bg-cream"
+        >
+          <Play className="h-5 w-5" fill="currentColor" />
+          Save & start
+        </button>
+      </div>
     </div>
   );
 }
 
-type BlockCardProps = {
+function SetCard({
+  block,
+  title,
+  onUpdate,
+  onDelete,
+}: {
   block: TimerBlock;
-  index: number;
+  title: string;
   onUpdate: (block: TimerBlock) => void;
-  onDelete: () => void;
-};
+  onDelete?: () => void;
+}) {
+  const update = (updates: Partial<TimerBlock>) => onUpdate({ ...block, ...updates });
 
-function BlockCard({ block, index, onUpdate, onDelete }: BlockCardProps) {
-  const updateBlock = (updates: Partial<TimerBlock>) => {
-    onUpdate({ ...block, ...updates });
-  };
-
-  const updateSegment = (segmentIndex: number, segment: TimerSegment) => {
-    const segments = [...block.segments];
-    segments[segmentIndex] = segment;
-    updateBlock({ segments });
-  };
-
-  const deleteSegment = (segmentIndex: number) => {
-    if (block.segments.length === 1) return;
-    updateBlock({ segments: block.segments.filter((_, i) => i !== segmentIndex) });
-  };
-
-  const addSegment = () => {
+  const addStep = () => {
     const color = COLOR_OPTIONS[block.segments.length % COLOR_OPTIONS.length];
-    updateBlock({
-      segments: [...block.segments, createDefaultSegment('New Segment', color)],
-    });
+    update({ segments: [...block.segments, createDefaultSegment(`Step ${block.segments.length + 1}`, color)] });
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-6 panel-shadow">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h3 className="text-xl font-black text-cream">Block {index + 1}</h3>
-          <p className="text-sm text-cream/45">Repeat count</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <select
-            className="rounded-lg border border-border bg-background-tertiary px-3 py-2 font-bold text-cream"
-            value={block.repeatCount}
-            onChange={(event) => updateBlock({ repeatCount: Number(event.target.value) })}
-          >
-            {BLOCK_REPEAT_OPTIONS.map((value) => (
-              <option key={value} value={value}>
-                {value === -1 ? '∞ (infinite)' : `×${value}`}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={onDelete}
-            className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-bold text-cream/55 transition-colors hover:border-ember hover:text-ember"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
+    <section className="rounded-2xl bg-card p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-lg font-black">{title}</h2>
+        {onDelete ? (
+          <button onClick={onDelete} className="grid h-9 w-9 place-items-center rounded-full text-cream/40 hover:text-ember" aria-label={`Remove ${title}`}>
+            <X className="h-4 w-4" />
           </button>
-        </div>
+        ) : null}
       </div>
 
-      <div className="space-y-4">
-        {block.segments.map((segment, segmentIndex) => (
-          <SegmentCard
+      <div className="space-y-2">
+        {block.segments.map((segment, i) => (
+          <StepRow
             key={segment.id}
             segment={segment}
-            index={segmentIndex}
-            onUpdate={(updated) => updateSegment(segmentIndex, updated)}
-            onDelete={() => deleteSegment(segmentIndex)}
+            onUpdate={(updated) => update({ segments: block.segments.map((s, j) => (j === i ? updated : s)) })}
+            onDelete={
+              block.segments.length > 1
+                ? () => update({ segments: block.segments.filter((_, j) => j !== i) })
+                : undefined
+            }
           />
         ))}
       </div>
 
       <button
-        onClick={addSegment}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border py-3 font-black text-cream/70 transition-colors hover:border-aqua hover:text-aqua"
+        onClick={addStep}
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-cream/60 transition-colors hover:bg-background-tertiary hover:text-cream"
       >
         <Plus className="h-4 w-4" />
-        Add Segment
+        Add step
       </button>
-    </div>
+
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+        <div>
+          <p className="font-bold">Repeat</p>
+          <p className="text-xs text-cream/40">
+            {block.repeatCount === -1
+              ? 'Loops until you stop it'
+              : block.repeatCount === 1
+                ? 'Plays once'
+                : `Plays these steps ${block.repeatCount} times`}
+          </p>
+        </div>
+        <RepeatStepper label="repeats" value={block.repeatCount} onChange={(repeatCount) => update({ repeatCount })} />
+      </div>
+    </section>
   );
 }
 
-type SegmentCardProps = {
+function StepRow({
+  segment,
+  onUpdate,
+  onDelete,
+}: {
   segment: TimerSegment;
-  index: number;
   onUpdate: (segment: TimerSegment) => void;
-  onDelete: () => void;
-};
+  onDelete?: () => void;
+}) {
+  const [showOptions, setShowOptions] = useState(false);
 
-function SegmentCard({ segment, index, onUpdate, onDelete }: SegmentCardProps) {
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-background-tertiary p-4">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase text-cream/45">Segment {index + 1}</p>
-          <input
-            className="mt-2 border-b border-border bg-transparent text-base font-black text-cream focus:border-aqua focus:outline-none"
-            value={segment.name}
-            onChange={(event) => onUpdate({ ...segment, name: event.target.value })}
-          />
-        </div>
+    <div className="rounded-xl bg-background-tertiary p-3">
+      <div className="flex items-center gap-2">
         <button
-          onClick={onDelete}
-          className="text-sm font-bold text-cream/50 transition-colors hover:text-ember"
+          type="button"
+          onClick={() => setShowOptions(!showOptions)}
+          className="h-7 w-7 shrink-0 rounded-full ring-2 ring-transparent transition hover:ring-cream/40"
+          style={{ backgroundColor: segment.color }}
+          aria-label="Color and sound"
+          aria-expanded={showOptions}
+        />
+        <input
+          className="min-w-0 flex-1 bg-transparent py-1 font-black text-cream placeholder:text-cream/30 focus:outline-none"
+          value={segment.name}
+          placeholder="Step name"
+          onChange={(event) => onUpdate({ ...segment, name: event.target.value })}
+        />
+        {onDelete ? (
+          <button onClick={onDelete} className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-cream/35 hover:text-ember" aria-label={`Remove ${segment.name}`}>
+            <Trash2 className="h-4 w-4" />
+          </button>
+        ) : null}
+      </div>
+
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setShowOptions(!showOptions)}
+          className="text-xs font-bold text-cream/40 hover:text-cream/70"
         >
-          Delete
+          {showOptions ? 'Hide options' : 'Color & sound'}
         </button>
+        <DurationField label={segment.name || 'step'} value={segment.durationSeconds} onChange={(durationSeconds) => onUpdate({ ...segment, durationSeconds })} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="space-y-2 text-sm font-bold text-cream/50">
-          Duration (seconds)
-          <input
-            type="number"
-            min={1}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-cream"
-            value={segment.durationSeconds}
-            onChange={(event) =>
-              onUpdate({
-                ...segment,
-                durationSeconds: Math.max(1, Number(event.target.value || 1)),
-              })
-            }
-          />
-          <p className="text-xs text-cream/35">
-            {formatDuration(segment.durationSeconds)}
-          </p>
-        </label>
-
-        <label className="space-y-2 text-sm font-bold text-cream/50">
-          End sound
-          <select
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-cream"
-            value={segment.endSound ?? 'bell'}
-            onChange={(event) => onUpdate({ ...segment, endSound: event.target.value as keyof typeof SOUND_OPTIONS })}
-          >
-            {SOUND_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {SOUND_OPTIONS[key].label}
-              </option>
+      {showOptions ? (
+        <div className="mt-3 space-y-3 border-t border-border pt-3">
+          <div className="flex flex-wrap gap-2">
+            {COLOR_OPTIONS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                onClick={() => onUpdate({ ...segment, color })}
+                aria-label={`Color ${color}`}
+                className={cn('h-8 w-8 rounded-full ring-2 transition', segment.color === color ? 'ring-cream' : 'ring-transparent')}
+                style={{ backgroundColor: color }}
+              />
             ))}
-          </select>
-        </label>
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-sm font-bold text-cream/50">Color</p>
-        <div className="flex flex-wrap gap-2">
-          {COLOR_OPTIONS.map((color) => (
-            <button
-              key={color}
-              type="button"
-              onClick={() => onUpdate({ ...segment, color })}
-              aria-label={`Use segment color ${color}`}
-              className={cn(
-                'w-7 h-7 rounded-full border-2 transition-transform',
-                segment.color === color ? 'border-cream scale-105' : 'border-transparent'
-              )}
-              style={{ backgroundColor: color }}
-            />
-          ))}
+          </div>
+          <label className="flex items-center justify-between gap-3 text-sm font-bold text-cream/60">
+            Sound when it ends
+            <select
+              className="rounded-lg bg-background px-3 py-2 text-cream"
+              value={segment.endSound ?? ''}
+              onChange={(event) => {
+                const endSound = (event.target.value || undefined) as SoundKey | undefined;
+                if (endSound) playSound(endSound, false);
+                onUpdate({ ...segment, endSound });
+              }}
+            >
+              <option value="">Default</option>
+              {SOUND_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {SOUND_OPTIONS[key].label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

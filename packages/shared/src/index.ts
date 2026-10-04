@@ -25,6 +25,10 @@ export {
   createDefaultBlock,
   createDefaultPattern,
   getDefaultPatterns,
+  createCountdownPattern,
+  createIntervalPattern,
+  isSimpleCountdown,
+  getRemainingAfter,
 } from './helpers';
 
 // Theme
